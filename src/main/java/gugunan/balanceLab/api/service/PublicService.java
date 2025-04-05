@@ -134,8 +134,8 @@ public class PublicService {
                                                 .then(0).otherwise(1).desc(),
                                                 qQuestion.strDate.desc(),
                                                 qQuestion.endDate.asc(),
-                                                qQuestion.createdDtm.desc(),
-                                                qSelection.questionId.desc().nullsFirst()
+                                                qSelection.selectSeq.desc().nullsFirst(),
+                                                qQuestion.questionId.desc()
 
                                 )
 
