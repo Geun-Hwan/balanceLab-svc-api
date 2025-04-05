@@ -41,7 +41,7 @@ public class SecurityConfig {
     @Order(1)
     public SecurityFilterChain publicFilterChain(HttpSecurity http) throws Exception {
         return http
-                .securityMatcher("/auth/**", "/mail/**", "/public/**") // 이 필터 체인은 이 경로들에만 적용됨
+                .securityMatcher("/auth/**", "/mail/**", "/public/**", "/robots.txt") // 이 필터 체인은 이 경로들에만 적용됨
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(unrestrictedCorsConfigurationSource()))
                 .authorizeHttpRequests(authz -> authz.anyRequest().permitAll())
