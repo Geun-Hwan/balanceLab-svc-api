@@ -6,12 +6,12 @@ import java.util.Optional;
 
 import org.springframework.beans.BeanUtils;
 
-import gugunan.balanceLab.domain.entity.QQuestionTotal;
 import gugunan.balanceLab.domain.entity.Question;
 import gugunan.balanceLab.domain.entity.QuestionTotal;
 import gugunan.balanceLab.domain.entity.Selection;
 import gugunan.balanceLab.support.Constants.QUESTION_STATUS;
 import gugunan.balanceLab.support.UserContext;
+import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -84,9 +84,13 @@ public class QuestionDto {
     }
 
     /* 상세 */
-    public QuestionDto(Question question, Boolean participation, QuestionTotal total) {
+    public QuestionDto(Question question, @Nullable Selection selection, QuestionTotal total) {
         this(question);
-        this.participation = participation;
+        if (selection != null) {
+            this.choiceType = selection.getChoiceType();
+            this.participationDtm = selection.getCreatedDtm();
+        }
+
         this.selectA = total.getCountA();
         this.selectB = total.getCountB();
 
@@ -126,7 +130,7 @@ public class QuestionDto {
                 .categoryCd(categoryCd)
                 .createUserId(userId)
                 .point(point)
-
+                .delYn(false)
                 .autoCreate(false)
                 .updateUserId(userId)
                 .questionStatusCd(Optional.ofNullable(questionStatusCd).orElse(QUESTION_STATUS.PROGRESS))

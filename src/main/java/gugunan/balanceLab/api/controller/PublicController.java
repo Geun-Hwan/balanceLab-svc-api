@@ -14,9 +14,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import gugunan.balanceLab.api.model.PredictDto;
 import gugunan.balanceLab.api.model.QuestionDto;
 import gugunan.balanceLab.api.model.SelectionDto;
 import gugunan.balanceLab.api.model.search.BalanceSearchParam;
+import gugunan.balanceLab.api.model.search.PageParam;
 import gugunan.balanceLab.api.service.PublicService;
 import gugunan.balanceLab.result.Result;
 import io.swagger.v3.oas.annotations.Operation;
@@ -89,4 +91,10 @@ public class PublicController {
         return new Result<>(publicService.getMonthlyRank());
     }
 
+    @Operation(summary = "예측 게임 조회", description = "예측 목록 조회 API")
+    @GetMapping(path = "/predict", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result<Page<PredictDto>> getPredictList(@ModelAttribute PageParam searchParam) {
+
+        return new Result<>(publicService.getPredictList(searchParam));
+    }
 }

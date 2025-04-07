@@ -9,11 +9,15 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import gugunan.balanceLab.api.model.PredictDto;
+import gugunan.balanceLab.api.model.QuestionDto;
 import gugunan.balanceLab.api.model.search.PageParam;
 import gugunan.balanceLab.api.service.PredictService;
+import gugunan.balanceLab.domain.entity.Predict;
 import gugunan.balanceLab.result.Result;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -31,9 +35,9 @@ public class PredictController {
 
     @Operation(summary = "예측 등록", description = "예측 등록 API")
     @PostMapping(path = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result<Object> createPredict() {
+    public Result<Predict> createPredict(@RequestBody PredictDto predictDto) {
 
-        return null;
+        return new Result<>(predictService.createPredict(predictDto));
     }
 
     @Operation(summary = "예측 수정", description = "예측 수정 API")
@@ -50,19 +54,19 @@ public class PredictController {
         return null;
     }
 
-    @Operation(summary = "예측 조회", description = "예측 목록 조회 API")
-    @GetMapping(path = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result<Page<Object>> getPredictList(@ModelAttribute PageParam searchParam) {
-
-        return null;
-    }
-
     @Operation(summary = "예측 삭제", description = "예측 삭제 API")
     @DeleteMapping(path = "/{predictId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Result<Long> removeQuestion(
             @Parameter(description = "질문 ID", example = "PRD00000001") @PathVariable(name = "predictId") String predictId) {
 
         return null;
+    }
+
+    @Operation(summary = "생성 목록 조회", description = "예측 생성 목록 조회 API")
+    @GetMapping(path = "/my", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result<Page<PredictDto>> getMyQuestionList(@ModelAttribute PageParam searchParam) {
+
+        return new Result<>(predictService.getMyPredictList(searchParam));
     }
 
 }

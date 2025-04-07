@@ -23,7 +23,7 @@ public final class Constants {
         public static final String PROGRESS = "20000001"; // 투표 진행 중
         public static final String END = "20000002"; // 투표 종료
         public static final String WAITING = "20000003"; // 투표 대기 중
-
+        public static final String COMPLETE = "20000004"; // 정산 완료
     }
 
     public static class POINT_TYPE_CD {
