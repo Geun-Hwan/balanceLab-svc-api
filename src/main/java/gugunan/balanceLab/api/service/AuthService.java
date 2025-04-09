@@ -23,6 +23,7 @@ import gugunan.balanceLab.domain.entity.QUser;
 import gugunan.balanceLab.domain.entity.User;
 import gugunan.balanceLab.result.CustomException;
 import gugunan.balanceLab.result.ErrorResult;
+import gugunan.balanceLab.support.UserContext;
 import gugunan.balanceLab.support.Constants.POINT_AMOUNT;
 import gugunan.balanceLab.support.Constants.VALID;
 import gugunan.balanceLab.utils.RedisUtil;
@@ -71,6 +72,9 @@ public class AuthService {
         entityManager.persist(user);
         entityManager.flush();
         pointService.addPoint(user.getUserId(), POINT_AMOUNT.JOIN_REWARD, "가입 포인트 지급");
+        if (UserContext.getAccount().getUserId() != null) {
+            return null;
+        }
 
         return login(new LoginRequest(userDto.getLoginId(), userDto.getPassword()), response);
 

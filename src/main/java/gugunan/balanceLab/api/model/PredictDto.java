@@ -1,6 +1,5 @@
 package gugunan.balanceLab.api.model;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -31,6 +30,8 @@ public class PredictDto {
     private LocalDateTime strDtm;
     private LocalDateTime endDtm;
 
+    private Boolean delYn;
+
     private Integer usedPoint;
 
     private Integer countA;
@@ -39,12 +40,18 @@ public class PredictDto {
     private Integer sumPointA;
     private Integer sumPointB;
     private Integer sumPointC;
+    private Integer totalPoints;
 
     private String payoutA;
     private String payoutB;
     private String payoutC;
 
+    private String winner;
+
     private Boolean participation;
+    private String choiceType; // A or B or C
+    private Integer rewardPoint;
+    private Integer betPoint;
 
     public PredictDto(Predict predict, PredictTotal predictTotal) {
         this.predictId = predict.getPredictId();
@@ -56,12 +63,15 @@ public class PredictDto {
         this.strDtm = predict.getStrDtm();
         this.endDtm = predict.getEndDtm();
         this.questionStatusCd = predict.getQuestionStatusCd();
+        this.delYn = predict.getDelYn();
+
         this.countA = predictTotal.getCountA();
         this.countB = predictTotal.getCountB();
         this.countC = predictTotal.getCountC();
         this.sumPointA = predictTotal.getSumPointA();
         this.sumPointB = predictTotal.getSumPointB();
         this.sumPointC = predictTotal.getSumPointC();
+        this.winner = predictTotal.getWinner();
 
         // 배당률을 PredictTotal에서 가져옵니다.
         this.payoutA = predictTotal.getPayoutA().toPlainString();
@@ -75,6 +85,9 @@ public class PredictDto {
         this(predict, predictTotal);
         if (predictParticipation != null) {
             this.participation = true;
+            this.choiceType = predictParticipation.getChoiceType();
+            this.betPoint = predictParticipation.getBetPoint();
+            this.rewardPoint = predictParticipation.getRewardPoint();
         }
     }
 
@@ -90,5 +103,14 @@ public class PredictDto {
                 .updateUserId(userId)
                 .questionStatusCd(Optional.ofNullable(questionStatusCd).orElse(QUESTION_STATUS.WAITING))
                 .build();
+    }
+
+    public PredictParticipation toParticipationEntity() {
+        String userId = UserContext.getAccount().getUserId();
+
+        return PredictParticipation.builder().predictId(predictId).userId(userId).choiceType(choiceType)
+                .betPoint(betPoint)
+                .build();
+
     }
 }

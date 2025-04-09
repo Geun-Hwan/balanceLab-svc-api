@@ -1,5 +1,6 @@
 package gugunan.balanceLab.interceptor;
 
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -19,7 +20,8 @@ public class UserContextInterceptor implements HandlerInterceptor {
     }
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+    public boolean preHandle(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
+            @NonNull Object handler) {
 
         String token = getAccessTokenFromRequest(request);
         if (token != null && tokenService.validateToken(token)) {
@@ -31,7 +33,8 @@ public class UserContextInterceptor implements HandlerInterceptor {
     }
 
     @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler,
+    public void afterCompletion(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
+            @NonNull Object handler,
             @Nullable Exception ex) {
         UserContext.clear(); // 요청 처리 완료 후 초기화
     }

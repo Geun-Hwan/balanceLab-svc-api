@@ -35,6 +35,9 @@ public class PredictTotal {
     @Column(name = "sum_point_c", nullable = false)
     private Integer sumPointC;
 
+    @Column(name = "total_points", nullable = false)
+    private Integer totalPoints;
+
     @Column(name = "payout_a", precision = 4, scale = 2)
     private BigDecimal payoutA;
 
@@ -43,4 +46,7 @@ public class PredictTotal {
 
     @Column(name = "payout_c", precision = 4, scale = 2)
     private BigDecimal payoutC;
+
+    @Column(name = "winner", length = 1)
+    private String winner;
 }

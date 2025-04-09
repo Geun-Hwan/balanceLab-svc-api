@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import gugunan.balanceLab.api.model.PredictDto;
-import gugunan.balanceLab.api.model.QuestionDto;
 import gugunan.balanceLab.api.model.search.PageParam;
 import gugunan.balanceLab.api.service.PredictService;
 import gugunan.balanceLab.domain.entity.Predict;
@@ -42,8 +41,8 @@ public class PredictController {
 
     @Operation(summary = "예측 수정", description = "예측 수정 API")
     @PutMapping(path = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result<Object> modifyPredict() {
-        return null;
+    public Result<Long> modifyPredict(@RequestBody PredictDto predictDto) {
+        return new Result<>(predictService.modifyPredict(predictDto));
     }
 
     @Operation(summary = "예측 조회", description = "예측 상세 조회 API")
@@ -59,7 +58,7 @@ public class PredictController {
     public Result<Long> removeQuestion(
             @Parameter(description = "질문 ID", example = "PRD00000001") @PathVariable(name = "predictId") String predictId) {
 
-        return null;
+        return new Result<>(predictService.deletePredict(predictId));
     }
 
     @Operation(summary = "생성 목록 조회", description = "예측 생성 목록 조회 API")
@@ -67,6 +66,13 @@ public class PredictController {
     public Result<Page<PredictDto>> getMyQuestionList(@ModelAttribute PageParam searchParam) {
 
         return new Result<>(predictService.getMyPredictList(searchParam));
+    }
+
+    @Operation(summary = "참여 목록 조회", description = "예측 참여 목록 조회 API")
+    @GetMapping(path = "/participation", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result<Page<PredictDto>> getPredcitParticipationList(@ModelAttribute PageParam searchParam) {
+
+        return new Result<>(predictService.getPredcitParticipationList(searchParam));
     }
 
 }

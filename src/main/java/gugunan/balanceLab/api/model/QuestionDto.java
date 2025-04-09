@@ -43,7 +43,8 @@ public class QuestionDto {
 
     // 참여여부
     private Boolean participation;
-
+    // 참여 보상
+    private Integer rewardPoint;
     // -----------------
     private String choiceType; // A or B or null
 
@@ -51,7 +52,6 @@ public class QuestionDto {
     private Integer selectB;
 
     private LocalDateTime participationDtm;
-
     private Integer usedPoint; // 등록할때 사용되는 포인트
 
     public QuestionDto(Question question) {
@@ -134,6 +134,12 @@ public class QuestionDto {
                 .autoCreate(false)
                 .updateUserId(userId)
                 .questionStatusCd(Optional.ofNullable(questionStatusCd).orElse(QUESTION_STATUS.PROGRESS))
+                .build();
+    }
+
+    public Selection toSelectionEntity() {
+        this.userId = UserContext.getAccount().getUserId();
+        return Selection.builder().questionId(questionId).userId(userId).choiceType(choiceType).rewardPoint(point)
                 .build();
     }
 }

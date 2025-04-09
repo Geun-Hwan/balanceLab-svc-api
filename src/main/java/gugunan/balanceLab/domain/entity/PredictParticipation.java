@@ -2,14 +2,14 @@ package gugunan.balanceLab.domain.entity;
 
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import gugunan.balanceLab.domain.idclass.PredictParticipationId;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -43,14 +43,12 @@ public class PredictParticipation {
     @Column(name = "reward_point")
     private Integer rewardPoint;
 
-    @Column(name = "create_dtm", nullable = false, updatable = false)
-    private LocalDateTime createDtm;
+    @CreationTimestamp
+    @Column(name = "created_dtm", nullable = false)
+    private LocalDateTime createdDtm;
 
-    @Column(name = "update_dtm", nullable = false)
-    private LocalDateTime updateDtm;
+    @UpdateTimestamp
+    @Column(name = "updated_dtm", nullable = false)
+    private LocalDateTime updatedDtm;
 
-    // 연관관계 (Optional)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "predict_id", insertable = false, updatable = false)
-    private Predict predict;
 }

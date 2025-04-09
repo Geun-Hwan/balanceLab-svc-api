@@ -15,16 +15,13 @@ import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
-import gugunan.balanceLab.BalanceLabApplication;
 import gugunan.balanceLab.api.model.PredictDto;
 import gugunan.balanceLab.api.model.QuestionDto;
-import gugunan.balanceLab.api.model.SelectionDto;
 import gugunan.balanceLab.api.model.search.BalanceSearchParam;
 import gugunan.balanceLab.api.model.search.PageParam;
 import gugunan.balanceLab.domain.entity.QDailyCounts;
 import gugunan.balanceLab.domain.entity.QMonthlyCounts;
 import gugunan.balanceLab.domain.entity.QQuestion;
-import gugunan.balanceLab.domain.entity.QQuestionTotal;
 import gugunan.balanceLab.domain.entity.QSelection;
 import gugunan.balanceLab.domain.entity.QWeekliyCounts;
 import gugunan.balanceLab.support.Constants.QUESTION_STATUS;
@@ -220,7 +217,7 @@ public class PublicService {
                                                 .and(qQuestion.questionStatusCd.eq(QUESTION_STATUS.PROGRESS))
                                                 .and(qQuestion.autoCreate.isTrue()))
                                 .orderBy(qQuestion.questionId.desc())
-                                .limit(3).fetch();
+                                .fetch();
 
         }
 
@@ -264,7 +261,7 @@ public class PublicService {
                 return mergeList;
         }
 
-        public Long addQuestionTotalCount(SelectionDto selectionDto) {
+        public Long addQuestionTotalCount(QuestionDto selectionDto) {
                 return selectionService.addQuestionTotal(selectionDto);
         }
 

@@ -17,8 +17,6 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import gugunan.balanceLab.api.model.PredictDto;
-import gugunan.balanceLab.api.model.QuestionDto;
-import gugunan.balanceLab.api.model.search.BalanceSearchParam;
 import gugunan.balanceLab.api.model.search.PageParam;
 import gugunan.balanceLab.domain.entity.Predict;
 import gugunan.balanceLab.domain.entity.QPredict;
@@ -35,120 +33,177 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional
 public class PredictService {
 
-    @Autowired
-    JPAQueryFactory queryFactory;
+        @Autowired
+        JPAQueryFactory queryFactory;
 
-    @Autowired
-    EntityManager entityManager;
+        @Autowired
+        EntityManager entityManager;
 
-    @Autowired
-    PointService pointService;
-    private static final QPredict qPredict = QPredict.predict;
-    private static final QPredictTotal qPredictTotal = QPredictTotal.predictTotal;
+        @Autowired
+        PointService pointService;
+        private static final QPredict qPredict = QPredict.predict;
+        private static final QPredictTotal qPredictTotal = QPredictTotal.predictTotal;
 
-    private static final QPredictParticipation qPredictParticipation = QPredictParticipation.predictParticipation;
+        private static final QPredictParticipation qPredictParticipation = QPredictParticipation.predictParticipation;
 
-    public Page<PredictDto> getPredictList(PageParam pageParam) {
+        public Page<PredictDto> getPredictList(PageParam pageParam) {
 
-        String userId = UserContext.getAccount().getUserId();
+                String userId = UserContext.getAccount().getUserId();
 
-        BooleanExpression delYExpression = qPredict.delYn.isFalse()
-                .and(qPredict.questionStatusCd.ne(QUESTION_STATUS.WAITING));
+                BooleanExpression delYExpression = qPredict.delYn.isFalse()
+                                .and(qPredict.questionStatusCd.ne(QUESTION_STATUS.WAITING));
 
-        BooleanBuilder builder = new BooleanBuilder(qPredictParticipation.predictId.eq(qPredict.predictId));
+                BooleanBuilder builder = new BooleanBuilder(qPredictParticipation.predictId.eq(qPredict.predictId));
 
-        if (userId != null) {
-            builder.and(qPredictParticipation.userId.eq(userId));
-        } else {
-            builder.and(Expressions.FALSE);
+                if (userId != null) {
+                        builder.and(qPredictParticipation.userId.eq(userId));
+                } else {
+                        builder.and(Expressions.FALSE);
+                }
+
+                Pageable pageable = PageRequest.of(pageParam.getPage(), pageParam.getPageSize());
+
+                long totalCount = queryFactory
+                                .select(qPredict.count())
+                                .from(qPredict)
+                                .where(
+                                                delYExpression)
+                                .fetchOne();
+                List<PredictDto> results = queryFactory
+                                .select(Projections.constructor(PredictDto.class, qPredict, qPredictTotal,
+                                                qPredictParticipation))
+                                .from(qPredict)
+                                .leftJoin(qPredictTotal)
+                                .on(qPredictTotal.predictId.eq(qPredict.predictId))
+                                .leftJoin(qPredictParticipation)
+                                .on(builder)
+                                .where(
+                                                delYExpression)
+                                .offset(pageable.getOffset())
+
+                                .limit(pageParam.getPageSize())
+                                .orderBy(new CaseBuilder()
+                                                .when(qPredict.questionStatusCd
+                                                                .eq(QUESTION_STATUS.END))
+                                                .then(0).otherwise(1).desc(),
+                                                qPredict.strDtm.desc(),
+                                                qPredict.endDtm.asc(),
+                                                qPredictParticipation.predictId.desc().nullsFirst(),
+                                                qPredict.predictId.desc()
+
+                                )
+
+                                .fetch();
+
+                return new PageImpl<>(results, pageable,
+                                totalCount);
+
         }
 
-        Pageable pageable = PageRequest.of(pageParam.getPage(), pageParam.getPageSize());
+        public Page<PredictDto> getMyPredictList(PageParam pageParam) {
+                String userId = UserContext.getAccount().getUserId();
+                Pageable pageable = PageRequest.of(pageParam.getPage(), pageParam.getPageSize());
 
-        long totalCount = queryFactory
-                .select(qPredict.count())
-                .from(qPredict)
-                .where(
-                        delYExpression)
-                .fetchOne();
-        List<PredictDto> results = queryFactory
-                .select(Projections.constructor(PredictDto.class, qPredict, qPredictTotal, qPredictParticipation))
-                .from(qPredict)
-                .leftJoin(qPredictTotal)
-                .on(qPredictTotal.predictId.eq(qPredict.predictId))
-                .leftJoin(qPredictParticipation)
-                .on(builder)
-                .where(
-                        delYExpression)
-                .offset(pageable.getOffset())
+                BooleanBuilder builder = new BooleanBuilder(Expressions.TRUE);
+                if (!userId.equals("SYSTEM")) {
+                        builder.and(qPredict.userId.eq(userId));
 
-                .limit(pageParam.getPageSize())
-                .orderBy(new CaseBuilder()
-                        .when(qPredict.questionStatusCd
-                                .eq(QUESTION_STATUS.END))
-                        .then(0).otherwise(1).desc(),
-                        qPredict.strDtm.desc(),
-                        qPredict.endDtm.asc(),
-                        qPredictParticipation.predictId.desc().nullsFirst(),
-                        qPredict.predictId.desc()
+                }
 
-                )
+                long totalCount = queryFactory
+                                .select(qPredict.count())
+                                .from(qPredict)
+                                .where(
+                                                builder)
+                                .fetchOne();
+                List<PredictDto> results = queryFactory.select(Projections.constructor(PredictDto.class, qPredict,
 
-                .fetch();
+                                qPredictTotal))
+                                .from(qPredict)
+                                .leftJoin(qPredictTotal).on(qPredict.predictId.eq(qPredictTotal.predictId))
+                                .where(
+                                                builder)
+                                .offset(pageable.getOffset())
 
-        return new PageImpl<>(results, pageable,
-                totalCount);
+                                .limit(pageParam.getPageSize())
+                                .orderBy(qPredict.createdDtm.desc())
+                                .fetch();
 
-    }
+                return new PageImpl<>(results, pageable,
+                                totalCount);
 
-    public Page<PredictDto> getMyPredictList(PageParam pageParam) {
-        String userId = UserContext.getAccount().getUserId();
-        Pageable pageable = PageRequest.of(pageParam.getPage(), pageParam.getPageSize());
+        }
 
-        long totalCount = queryFactory
-                .select(qPredict.count())
-                .from(qPredict)
-                .where(
-                        qPredict.userId.eq(userId))
-                .fetchOne();
-        List<PredictDto> results = queryFactory.select(Projections.constructor(PredictDto.class, qPredict,
+        public Page<PredictDto> getPredcitParticipationList(PageParam pageParam) {
+                String userId = UserContext.getAccount().getUserId();
+                Pageable pageable = PageRequest.of(pageParam.getPage(), pageParam.getPageSize());
 
-                qPredictTotal))
-                .from(qPredict)
-                .leftJoin(qPredictTotal).on(qPredict.predictId.eq(qPredictTotal.predictId))
-                .where(
-                        qPredict.userId.eq(userId))
-                .offset(pageable.getOffset())
+                long totalCount = queryFactory
+                                .select(qPredictParticipation.count())
+                                .from(qPredictParticipation)
+                                .where(
+                                                qPredictParticipation.userId.eq(userId))
+                                .fetchOne();
+                List<PredictDto> results = queryFactory
+                                .select(Projections.constructor(
+                                                PredictDto.class,
+                                                qPredict,
+                                                qPredictTotal, qPredictParticipation))
+                                .from(qPredictParticipation)
+                                .join(qPredict)
+                                .on(qPredictParticipation.predictId.eq(qPredict.predictId))
+                                .leftJoin(qPredictTotal).on(qPredict.predictId.eq(qPredictTotal.predictId))
+                                .where(
+                                                qPredictParticipation.userId.eq(userId))
+                                .offset(pageable.getOffset())
 
-                .limit(pageParam.getPageSize())
-                .orderBy(qPredict.createdDtm.desc())
-                .fetch();
+                                .limit(pageParam.getPageSize())
+                                .orderBy(qPredictParticipation.createdDtm.desc())
 
-        return new PageImpl<>(results, pageable,
-                totalCount);
+                                .fetch();
 
-    }
+                return new PageImpl<>(results, pageable,
+                                totalCount);
 
-    /**
-     * @apiNote 예측 수동 등록
-     */
-    public Predict createPredict(PredictDto dto) {
+        }
 
-        Predict predict = dto.toEntity();
+        /**
+         * @apiNote 예측 수동 등록
+         */
+        public Predict createPredict(PredictDto dto) {
 
-        // pointService.usePoint(predict.getUserId(), dto.getUsedPoint(), "게임 생성 포인트
-        // 사용");
-        entityManager.persist(predict);
+                Predict predict = dto.toEntity();
 
-        return predict;
+                pointService.usePoint(predict.getUserId(), dto.getUsedPoint(), "게임 생성 포인트 사용");
+                entityManager.persist(predict);
 
-    }
+                return predict;
 
-    public void modifyPredict() {
+        }
 
-    }
+        public Long modifyPredict(PredictDto dto) {
 
-    public void deletePredict() {
+                return queryFactory.update(qPredict)
+                                .set(qPredict.strDtm, dto.getStrDtm())
+                                .set(qPredict.endDtm, dto.getEndDtm())
+                                .set(qPredict.title, dto.getTitle())
+                                .set(qPredict.optionA, dto.getOptionA())
+                                .set(qPredict.optionB, dto.getOptionB())
+                                .set(qPredict.optionC, dto.getOptionC())
+                                .set(qPredict.updateUserId, UserContext.getAccount().getUserId())
+                                .where(qPredict.predictId.eq(dto.getPredictId()))
+                                .execute();
 
-    }
+        }
+
+        public Long deletePredict(String predictId) {
+
+                return queryFactory.update(qPredict).set(qPredict.delYn, true)
+                                .set(qPredict.updateUserId, UserContext.getAccount().getUserId())
+                                .where(qPredict.predictId.eq(predictId))
+
+                                .execute();
+
+        }
+
 }

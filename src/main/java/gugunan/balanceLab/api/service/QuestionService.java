@@ -243,19 +243,23 @@ public class QuestionService {
                 String userId = UserContext.getAccount().getUserId();
                 Pageable pageable = PageRequest.of(BalanceSearchParam.getPage(), BalanceSearchParam.getPageSize());
 
+                BooleanBuilder builder = new BooleanBuilder(Expressions.TRUE);
+                if (!userId.equals("SYSTEM")) {
+                        builder.and(qQuestion.userId.eq(userId));
+
+                }
+
                 long totalCount = queryFactory
                                 .select(qQuestion.count())
                                 .from(qQuestion)
-                                .where(
-                                                qQuestion.userId.eq(userId))
+                                .where(builder)
                                 .fetchOne();
                 List<QuestionDto> results = queryFactory.select(Projections.constructor(QuestionDto.class, qQuestion,
 
                                 qQuestionTotal))
                                 .from(qQuestion)
                                 .leftJoin(qQuestionTotal).on(qQuestion.questionId.eq(qQuestionTotal.questionId))
-                                .where(
-                                                qQuestion.userId.eq(userId))
+                                .where(builder)
                                 .offset(pageable.getOffset())
 
                                 .limit(BalanceSearchParam.getPageSize())
