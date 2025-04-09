@@ -84,8 +84,17 @@ public class QuestionService {
 
                 BooleanExpression isTarget = qQuestion.questionId.eq(questionDto.getQuestionId());
                 BooleanExpression isMine = qQuestion.userId.eq(UserContext.getAccount().getUserId());
+
                 BooleanExpression isWating = qQuestion.questionStatusCd.eq(QUESTION_STATUS.WAITING);
                 BooleanExpression isAfter = qQuestion.strDate.after(LocalDate.now());
+
+                BooleanExpression finalCondition;
+
+                if ("SYSTEM".equals(UserContext.getAccount().getUserId())) {
+                        finalCondition = isTarget;
+                } else {
+                        finalCondition = isTarget.and(isMine).and(isWating).and(isAfter);
+                }
 
                 return queryFactory.update(qQuestion).set(qQuestion.choiceA, questionDto.getChoiceA())
                                 .set(qQuestion.title, questionDto.getTitle())
@@ -95,7 +104,7 @@ public class QuestionService {
                                 .set(qQuestion.categoryCd, questionDto.getCategoryCd())
                                 .set(qQuestion.questionStatusCd, questionDto.getQuestionStatusCd())
                                 .set(qQuestion.updateUserId, userId)
-                                .where(isTarget, isMine, isWating, isAfter)
+                                .where(finalCondition)
 
                                 .execute();
 

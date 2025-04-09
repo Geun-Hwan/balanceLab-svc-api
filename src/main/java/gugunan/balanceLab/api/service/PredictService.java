@@ -1,5 +1,6 @@
 package gugunan.balanceLab.api.service;
 
+import java.beans.Expression;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,9 +12,11 @@ import org.springframework.stereotype.Service;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.SubQueryExpression;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import gugunan.balanceLab.api.model.PredictDto;
@@ -117,10 +120,13 @@ public class PredictService {
                                                 builder)
                                 .fetchOne();
                 List<PredictDto> results = queryFactory.select(Projections.constructor(PredictDto.class, qPredict,
-
-                                qPredictTotal))
+                                qPredictTotal, qPredictParticipation))
                                 .from(qPredict)
                                 .leftJoin(qPredictTotal).on(qPredict.predictId.eq(qPredictTotal.predictId))
+                                .leftJoin(qPredictParticipation)
+                                .on(qPredictParticipation.predictId.eq(qPredict.predictId)
+                                                .and(qPredictParticipation.userId.eq(userId)))
+
                                 .where(
                                                 builder)
                                 .offset(pageable.getOffset())
@@ -203,6 +209,33 @@ public class PredictService {
                                 .where(qPredict.predictId.eq(predictId))
 
                                 .execute();
+
+        }
+
+        public Long modifyPredictTotal(PredictDto dto) {
+
+                String userId = UserContext.getAccount().getUserId();
+
+                BooleanBuilder builder = new BooleanBuilder(qPredict.predictId.eq(dto.getPredictId()));
+
+                if ("SYSTEM".equals(userId)) {
+                        builder.and(Expressions.TRUE);
+                } else {
+                        builder.and(qPredict.userId.eq(userId));
+                }
+                BooleanExpression boolExpression = JPAExpressions.selectFrom(qPredict).where(builder).exists();
+
+                return queryFactory.update(qPredictTotal).set(qPredictTotal.winner,
+                                dto.getWinner()).set(qPredictTotal.lastUpdateUserId, userId)
+                                .where(qPredictTotal.predictId.eq(dto.getPredictId()).and(boolExpression))
+                                .execute();
+
+        }
+
+        public Long removePredictParticipation(String prdId) {
+
+                return queryFactory.delete(qPredictParticipation).where(qPredictParticipation.predictId.eq(prdId)
+                                .and(qPredictParticipation.userId.eq(UserContext.getAccount().getUserId()))).execute();
 
         }
 

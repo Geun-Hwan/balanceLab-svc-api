@@ -55,7 +55,7 @@ public class PredictController {
 
     @Operation(summary = "예측 삭제", description = "예측 삭제 API")
     @DeleteMapping(path = "/{predictId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result<Long> removeQuestion(
+    public Result<Long> deletePredict(
             @Parameter(description = "질문 ID", example = "PRD00000001") @PathVariable(name = "predictId") String predictId) {
 
         return new Result<>(predictService.deletePredict(predictId));
@@ -73,6 +73,20 @@ public class PredictController {
     public Result<Page<PredictDto>> getPredcitParticipationList(@ModelAttribute PageParam searchParam) {
 
         return new Result<>(predictService.getPredcitParticipationList(searchParam));
+    }
+
+    @Operation(summary = "예측 결과 업데이트", description = "예측 결과 업데이트 API")
+    @PutMapping(path = "/result", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result<Long> modifyPredictTotal(@RequestBody PredictDto predictDto) {
+        return new Result<>(predictService.modifyPredictTotal(predictDto));
+    }
+
+    @Operation(summary = "예측 참여 내역 삭제", description = "예측 참여 내역 삭제 API")
+    @DeleteMapping(path = "/participation/{predictId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result<Long> removePredictParticipation(
+            @Parameter(description = "질문 ID", example = "PRD00000001") @PathVariable(name = "predictId") String predictId) {
+
+        return new Result<>(predictService.removePredictParticipation(predictId));
     }
 
 }

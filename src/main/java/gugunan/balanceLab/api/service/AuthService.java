@@ -97,7 +97,7 @@ public class AuthService {
         ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
                 .secure(true)
-                .sameSite("Strict")
+                .sameSite("None")
                 .maxAge(VALID.REFRESH_TOKEN) // 7일 동안 유효
                 .path("/")
                 .build();

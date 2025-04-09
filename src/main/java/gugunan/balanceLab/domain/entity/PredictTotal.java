@@ -49,4 +49,7 @@ public class PredictTotal {
 
     @Column(name = "winner", length = 1)
     private String winner;
+
+    @Column(name = "last_update_user_id", nullable = true)
+    private String lastUpdateUserId;
 }
