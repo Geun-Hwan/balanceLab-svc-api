@@ -59,7 +59,7 @@ public class SelectionService {
                 .where(qQuestion.questionId.eq(selectionDto.getQuestionId()))
                 .fetchOne();
 
-        if (question != null) {
+        if (question != null && question.getEndDate() != null) {
             if ((question.getEndDate().isBefore(LocalDate.now()) || Arrays.asList(
                     QUESTION_STATUS.END,
                     QUESTION_STATUS.COMPLETE).contains(question.getQuestionStatusCd()))) {
